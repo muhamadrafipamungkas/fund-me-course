@@ -54,11 +54,11 @@ contract HelperConfig is Script {
         vm.startBroadcast();
         MockV3Aggregator mockFeedPrice = new MockV3Aggregator(8, 2000e8);
         vm.stopBroadcast();
-        
+
         NetworkConfig memory mockConfig = NetworkConfig({
             priceFeed: address(mockFeedPrice)
         });
 
-        return mockConfig
+        return mockConfig;
     }
 }
