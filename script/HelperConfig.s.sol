@@ -17,6 +17,9 @@ contract HelperConfig is Script {
         address priceFeed;
     }
 
+    uint8 public DECIMAL = 8;
+    int256 public INITIAL_PRICE = 2000e8;
+
     constructor() {
         if (block.chainid == 11155111) {
             activeNetworkConfig = getSepoliaEthConfig();
@@ -52,7 +55,7 @@ contract HelperConfig is Script {
         // 2. Return the mock address
 
         vm.startBroadcast();
-        MockV3Aggregator mockFeedPrice = new MockV3Aggregator(8, 2000e8);
+        MockV3Aggregator mockFeedPrice = new MockV3Aggregator(DECIMAL, INITIAL_PRICE);
         vm.stopBroadcast();
 
         NetworkConfig memory mockConfig = NetworkConfig({
