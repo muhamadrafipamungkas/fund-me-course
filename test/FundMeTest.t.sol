@@ -9,8 +9,9 @@ contract FundMeTest is Test {
 
     // Make it storage variable to make it accessible on all test function
     FundMe fundMe;
-    address USER = makeAddr("user");
-    uint256 SEND_VALUE = 0.1 ether;
+    address constant USER = address(0x1234567890);
+    uint256 constant SEND_VALUE = 0.1 ether;
+    uint256 constant GAS_PRICE = 1;
     
     // This will be called before any test
     function setUp() external {
@@ -65,8 +66,12 @@ contract FundMeTest is Test {
         uint256 startingOwnerBalance = fundMe.getOwner().balance;
         uint256 startingContractBalance = address(fundMe).balance;
         
+        // uint256 gasStart = gasleft();
+        // vm.txGasPrice(GAS_PRICE);
         vm.prank(fundMe.getOwner());
         fundMe.withdraw();
+        // uint256 gasEnd = gasleft();
+        // uint256 gasUsed = (gasEnd - gasStart) * tx.gasprice;
 
         uint256 endingOwnerBalance = fundMe.getOwner().balance;
         uint256 endingContractBalance = address(fundMe).balance;
@@ -89,6 +94,30 @@ contract FundMeTest is Test {
 
         vm.prank(fundMe.getOwner());
         fundMe.withdraw();
+        vm.stopPrank();
+
+        uint256 endingOwnerBalance = fundMe.getOwner().balance;
+        uint256 endingContractBalance = address(fundMe).balance;
+
+        assertEq(endingOwnerBalance, startingOwnerBalance + startingContractBalance);
+        assertEq(endingContractBalance, 0);
+    }
+
+
+    function testWithdrawWithMultipleFundersCheaper() public funded {
+        uint160 numberOfFunders = 10;
+        uint160 startOfFunderIndex = 1;
+
+        for (uint160 i = startOfFunderIndex; i < numberOfFunders; i++) {
+            hoax(address(i), SEND_VALUE); 
+            fundMe.fund{value: SEND_VALUE}();
+        }
+
+        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+        uint256 startingContractBalance = address(fundMe).balance;
+
+        vm.prank(fundMe.getOwner());
+        fundMe.cheaperWithdraw();
         vm.stopPrank();
 
         uint256 endingOwnerBalance = fundMe.getOwner().balance;
